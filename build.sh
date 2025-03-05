@@ -1,4 +1,4 @@
 #!/usr/bin/bash
 set -xe
 
-clang main.c -o main -L./lib -I./lib -lraylib -lm
+clang emulator.c -o emulator -L./lib -I./lib -lraylib -lm
