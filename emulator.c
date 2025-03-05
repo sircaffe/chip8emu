@@ -34,16 +34,42 @@ void draw_pixel(size_t x, size_t y) {
     if (x < WIDTH && y < HEIGHT) screen[y*WIDTH+x] = true;
 }
 
+// sample sprites
+
+Sprite T = {
+    .row = {0x80, 0xF0, 0x80, 0x80, 0x70}
+};
+Sprite E = {
+    .row = {0xE0, 0x90, 0xF0, 0x80, 0x70}
+};
+Sprite S = {
+    .row = {0x70, 0x80, 0x60, 0x10, 0xE0}
+};
+
 void draw_sprite(size_t x, size_t y, Sprite sprite) {
-    // TODO: decode each bit from Sprite rows and render
+    for (int dy = 0; dy <= 4; ++dy) {
+        for (int dx = 7; dx >= 0; --dx) {
+            if ((sprite.row[dy] << dx) & 0x80) draw_pixel(dx+x, dy+y);
+        }
+    }
 }
 
 int main(void)
 {
+    SetTraceLogLevel(LOG_NONE);
     InitWindow(WIDTH*PIXEL_SIZE, HEIGHT*PIXEL_SIZE, "CHIP-8 Emulator");
 
     memset(screen, false, WIDTH*HEIGHT);
-    draw_pixel(63, 31);
+    
+    // --- Hardcoded sample text rendering
+    int offset = 16;
+    int spacing = 5;
+
+    draw_sprite(offset, (HEIGHT/2)-2, T);
+    draw_sprite(spacing+offset, (HEIGHT/2)-2, E);
+    draw_sprite(2*spacing+offset, (HEIGHT/2)-2, S);
+    draw_sprite(3*spacing+offset, (HEIGHT/2)-2, T);
+    // --- Hardcoded sample text rendering
 
     while (!WindowShouldClose()) {
         BeginDrawing();
