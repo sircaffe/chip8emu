@@ -36,20 +36,48 @@ void draw_pixel(size_t x, size_t y) {
 
 // sample sprites
 
-Sprite T = {
-    .row = {0x80, 0xF0, 0x80, 0x80, 0x70}
+
+Sprite smile = {
+    .row = {0x42, 0xA5, 0x00, 0x3C, 0x18}
 };
-Sprite E = {
-    .row = {0xE0, 0x90, 0xF0, 0x80, 0x70}
+
+Sprite text[4] = {
+    {
+        .row = {0x80, 0xF0, 0x80, 0x80, 0x70}
+    },
+    {
+        .row = {0xE0, 0x90, 0xF0, 0x80, 0x70}
+    },
+    {
+        .row = {0x70, 0x80, 0x60, 0x10, 0xE0}
+    },
+    {
+        .row = {0x80, 0xF0, 0x80, 0x80, 0x70}
+    }
 };
-Sprite S = {
-    .row = {0x70, 0x80, 0x60, 0x10, 0xE0}
-};
+
+// 0100 0010
+// 1010 0101
+// 0000 0000
+// 0011 1100
+// 0001 1000
 
 void draw_sprite(size_t x, size_t y, Sprite sprite) {
     for (int dy = 0; dy <= 4; ++dy) {
         for (int dx = 7; dx >= 0; --dx) {
             if ((sprite.row[dy] << dx) & 0x80) draw_pixel(dx+x, dy+y);
+        }
+    }
+}
+
+void update_screen() {
+    for (int y = 0; y < HEIGHT; ++y) {
+        for (int col = 0; col < WIDTH; ++col) {
+            int x = col % WIDTH;
+
+            if (screen[y*WIDTH+x] == true) {
+                DrawRectangle(x*PIXEL_SIZE, y*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE, BLACK);
+            }
         }
     }
 }
@@ -65,26 +93,16 @@ int main(void)
     int offset = 16;
     int spacing = 5;
 
-    draw_sprite(offset, (HEIGHT/2)-2, T);
-    draw_sprite(spacing+offset, (HEIGHT/2)-2, E);
-    draw_sprite(2*spacing+offset, (HEIGHT/2)-2, S);
-    draw_sprite(3*spacing+offset, (HEIGHT/2)-2, T);
+    for (int i = 0; i < 5; ++i) {
+        draw_sprite(i*spacing+offset, (HEIGHT/2) - 2, text[i]);
+    }
+    draw_sprite(4*spacing+offset, (HEIGHT/2) - 2, smile);
     // --- Hardcoded sample text rendering
 
     while (!WindowShouldClose()) {
         BeginDrawing();
             ClearBackground(RAYWHITE);
-
-            for (int y = 0; y < HEIGHT; ++y) {
-                for (int col = 0; col < WIDTH; ++col) {
-                    int x = col % WIDTH;
-                    
-                    if (screen[y*WIDTH+x] == true) {
-                        DrawRectangle(x*PIXEL_SIZE, y*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE, BLACK);
-                    }
-                }
-            }
-
+            update_screen();
         EndDrawing();
     }
     CloseWindow();
