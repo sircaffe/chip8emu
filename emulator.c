@@ -3,6 +3,8 @@
 
 #include "./lib/raylib.h"
 
+#define STB_IMPLEMENTATION
+
 #define WIDTH 64
 #define HEIGHT 32
 
@@ -98,7 +100,7 @@ int main(void)
     }
     draw_sprite(4*spacing+offset, (HEIGHT/2) - 2, smile);
     // --- Hardcoded sample text rendering
-
+    
     while (!WindowShouldClose()) {
         BeginDrawing();
             ClearBackground(RAYWHITE);
