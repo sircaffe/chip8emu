@@ -54,7 +54,7 @@ if (scalar(@ARGV) > 2) {
     } elsif ($ARGV[0] eq "check") {
         check_integrity();
     } elsif ($ARGV[0] eq "clean") {
-        print `rm emulator -v`;
+        print `rm emulator -v` or die("test");
     } elsif ($ARGV[0] eq "help") {
         usage();
     } else {
