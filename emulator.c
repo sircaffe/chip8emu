@@ -1,22 +1,22 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "./lib/raylib.h"
+#include "raylib.h"
 
-#define STB_IMPLEMENTATION
-
-#define WIDTH 64
-#define HEIGHT 32
+#define SCREEN_WIDTH 64
+#define SCREEN_HEIGHT 32
 
 #define PIXEL_SIZE 8
 
-bool screen[WIDTH*HEIGHT];
+bool screen[SCREEN_WIDTH*SCREEN_HEIGHT];
 
 typedef struct {
-    uint8_t PC;
+    uint16_t PC;
 
     uint16_t I;
-    uint8_t VX[15];
+    uint8_t VN[15]; // VF (V[15]) is flag register
     
     uint8_t RAM[4095];
     uint16_t STACK[15];
@@ -33,36 +33,8 @@ typedef struct {
 } Sprite;
 
 void draw_pixel(size_t x, size_t y) {
-    if (x < WIDTH && y < HEIGHT) screen[y*WIDTH+x] = true;
+    if (x < SCREEN_WIDTH && y < SCREEN_HEIGHT) screen[y*SCREEN_WIDTH+x] = true;
 }
-
-// sample sprites
-
-
-Sprite smile = {
-    .row = {0x42, 0xA5, 0x00, 0x3C, 0x18}
-};
-
-Sprite text[4] = {
-    {
-        .row = {0x80, 0xF0, 0x80, 0x80, 0x70}
-    },
-    {
-        .row = {0xE0, 0x90, 0xF0, 0x80, 0x70}
-    },
-    {
-        .row = {0x70, 0x80, 0x60, 0x10, 0xE0}
-    },
-    {
-        .row = {0x80, 0xF0, 0x80, 0x80, 0x70}
-    }
-};
-
-// 0100 0010
-// 1010 0101
-// 0000 0000
-// 0011 1100
-// 0001 1000
 
 void draw_sprite(size_t x, size_t y, Sprite sprite) {
     for (int dy = 0; dy <= 4; ++dy) {
@@ -73,34 +45,54 @@ void draw_sprite(size_t x, size_t y, Sprite sprite) {
 }
 
 void update_screen() {
-    for (int y = 0; y < HEIGHT; ++y) {
-        for (int col = 0; col < WIDTH; ++col) {
-            int x = col % WIDTH;
+    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+        for (int col = 0; col < SCREEN_WIDTH; ++col) {
+            int x = col % SCREEN_WIDTH;
 
-            if (screen[y*WIDTH+x] == true) {
+            if (screen[y*SCREEN_WIDTH+x] == true) {
                 DrawRectangle(x*PIXEL_SIZE, y*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE, BLACK);
             }
         }
     }
 }
 
-int main(void)
-{
-    SetTraceLogLevel(LOG_NONE);
-    InitWindow(WIDTH*PIXEL_SIZE, HEIGHT*PIXEL_SIZE, "CHIP-8 Emulator");
-
-    memset(screen, false, WIDTH*HEIGHT);
-    
-    // --- Hardcoded sample text rendering
-    int offset = 16;
-    int spacing = 5;
-
-    for (int i = 0; i < 5; ++i) {
-        draw_sprite(i*spacing+offset, (HEIGHT/2) - 2, text[i]);
+int load_rom_into_ram(Chip8 *chip8, char *path_to_rom) {
+    FILE *f = fopen(path_to_rom, "rb");
+    if (f == NULL) {
+        fprintf(stderr, "ERROR: could not read rom %s\n", path_to_rom);
+        return 1;
     }
-    draw_sprite(4*spacing+offset, (HEIGHT/2) - 2, smile);
-    // --- Hardcoded sample text rendering
     
+    fseek(f, 1, SEEK_END);
+    size_t rom_size = ftell(f);
+    rewind(f);
+
+    char *buff = malloc(sizeof(char)*rom_size);
+    memset(buff, 0, rom_size);
+    
+    for (int i = 0; i < rom_size; ++i) {
+        fread(buff, 1, rom_size, f);
+    }
+    memcpy(chip8->RAM, buff, rom_size);
+    fclose(f);
+    return 0;
+}
+
+int main(void) {
+    SetTraceLogLevel(LOG_NONE);
+    InitWindow(SCREEN_WIDTH*PIXEL_SIZE, SCREEN_HEIGHT*PIXEL_SIZE, "CHIP-8 Emulator");
+
+    memset(screen, false, SCREEN_WIDTH*SCREEN_HEIGHT);
+
+    Chip8 chip8 = {0};
+
+    // TODO: Unhardcode loading roms
+    load_rom_into_ram(&chip8, "./roms/chip8-roms/programs/IBM Logo.ch8");
+    
+    for (size_t i = 0; i < 10; ++i) {
+        printf("0x%x, \n", chip8.RAM[i]);
+    }
+
     while (!WindowShouldClose()) {
         BeginDrawing();
             ClearBackground(RAYWHITE);
