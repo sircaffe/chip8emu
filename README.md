@@ -1,15 +1,11 @@
-# Goal of this project
-With so many Chip-8 emulators out there, what is the point of another one? The answer is simple: to learn.
-Essentially, this project is purely for learning purposes. It is not expected to be used after completion nor to be fully functional.
+# Chip-8 Emulator
+Interpreter of Chip-8 instructions. Developed purely for recreational purposes.
 
 > [!WARNING]
-> In early stages of development!
+> Development has been suspended temporarily since March 2025.
 
-# Quick Get Started
+# Build
 ```shell
 $ ./build.sh
 $ ./emulator
 ```
-
-# Milestones
-soon...
